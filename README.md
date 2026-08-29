@@ -2,8 +2,13 @@
 
 A 股个人投资复盘工作台：按日查看大盘走势、全球市场联动、个人持仓表现与涨跌停统计。部署于 WorkBuddy 资料库 page，交易日 8:30/15:30 自动更新。
 
+> 注意：本仓库含个人持仓数据，公开后所有人可见。
+
 ## 在线页面
 https://www.workbuddy.cn/space/d/yBrpn61HWbuSLSU2lvWdjx
+
+## License
+MIT License — 见 [LICENSE](LICENSE)
 
 ## 功能模块
 | 模块 | 内容 | 数据表 |
