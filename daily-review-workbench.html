@@ -202,7 +202,12 @@
       <div class="idx-sub" data-page-node-id="NLVglXAzmdQr0dYyzIef3E">两市成交额<b id="amtVal" data-sp-bindable="database" data-sp-database-id="cLcxNlQynomKfZa92Ptryc" data-page-node-id="iyBEZ7EKhtw1Isxx3OHKiR">--</b></div>
       <div class="idx-sub" data-page-node-id="X9eOa7ui2ixGGnsCmG0Fid">市场情绪<b id="moodBadge" data-sp-bindable="database" data-sp-database-id="cLcxNlQynomKfZa92Ptryc" data-page-node-id="OTNv2qmfPFDyKxRpJQqHP5">--</b></div>
     </div>
-    <h3 data-page-node-id="fooUqA4mgOAYt2TgJbhb0x">上证指数 K 线（红涨绿跌）</h3>
+    <h3 data-page-node-id="fooUqA4mgOAYt2TgJbhb0x">指数 K 线（红涨绿跌）</h3>
+    <div class="tabs" id="klineIdxTabs" style="margin-top:4px">
+      <button class="tab on" type="button" data-kidx="sh">上证指数</button>
+      <button class="tab" type="button" data-kidx="sz">深证成指</button>
+      <button class="tab" type="button" data-kidx="cyb">创业板指</button>
+    </div>
     <div class="tabs" id="klineRanges" style="margin-top:4px">
       <button class="tab" type="button" data-range="12">近12日</button>
       <button class="tab on" type="button" data-range="1m">近1月</button>
@@ -343,6 +348,7 @@
     intradayIdx: 'sh',
     intradayStep: 1,
     klineRange: '1m',
+    klineIdx: 'sh',
     schemaOptions: {}   // { '类型': [{text,id}] }
   };
 
@@ -686,7 +692,8 @@
     function x(i){ return L + (W-L-R) * (i/(points.length-1)); }
     function y(v){ return T + (H-T-B) * (1-(v-min)/span); }
     var cw = Math.max(4, Math.min(14, ((W-L-R)/(points.length)) * 0.62));  // 蜡烛体宽
-    var svg = '<svg viewBox="0 0 680 ' + H + '" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="上证指数K线">';
+    var kName = (points[0] && (points[0].label||points[0].name)) || '上证指数';
+    var svg = '<svg viewBox="0 0 680 ' + H + '" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="'+kName+'K线">';
     svg += '<line x1="'+L+'" y1="'+(H-B)+'" x2="'+(W-R)+'" y2="'+(H-B)+'" stroke="#223146" stroke-width="1"/>';
     for(var j=0;j<points.length;j++){
       var p=points[j];
@@ -973,18 +980,25 @@
     var moodEl = $('moodBadge');
     moodEl.textContent = mood || '--';
     moodEl.className = 'mood ' + (MOODS.indexOf(mood)>=0 ? 'm'+(MOODS.indexOf(mood)+1) : '');
+    // K 线：按当前指数（klineIdx）读取对应 OHLC 字段
+    var KF = {
+      sh:  { name: '上证指数',   c: '上证指数',   o: '上证开盘价', h: '上证最高价', l: '上证最低价' },
+      sz:  { name: '深证成指',   c: '深证成指',   o: '深证成指开盘价', h: '深证成指最高价', l: '深证成指最低价' },
+      cyb: { name: '创业板指',   c: '创业板指',   o: '创业板指开盘价', h: '创业板指最高价', l: '创业板指最低价' }
+    };
+    var kf = KF[state.klineIdx] || KF.sh;
     var pts = [];
     for(var i=0;i<state.db1dates.length;i++){
       var d = state.db1dates[i];
       if(d > state.date) break;
       var rcd = state.db1map[d];
-      var v = Number(rcd['上证指数']);
+      var v = Number(rcd[kf.c]);
       if(isNaN(v)) continue;
-      var o = Number(rcd['上证开盘价']), h = Number(rcd['上证最高价']), l = Number(rcd['上证最低价']);
+      var o = Number(rcd[kf.o]), h = Number(rcd[kf.h]), l = Number(rcd[kf.l]);
       if(!isNaN(o) && !isNaN(h) && !isNaN(l)){
-        pts.push({ d: d.slice(5), o: o, h: h, l: l, c: v });
+        pts.push({ d: d.slice(5), o: o, h: h, l: l, c: v, label: kf.name });
       } else {
-        pts.push({ d: d.slice(5), v: v });
+        pts.push({ d: d.slice(5), v: v, label: kf.name });
       }
     }
     // 范围筛选：近12日/1月(约22交易日)/3月/6月/1年
@@ -1707,6 +1721,16 @@
       var range = tab.getAttribute('data-range');
       if(!range || range===state.klineRange) return;
       state.klineRange = range;
+      var tabs = this.querySelectorAll('.tab');
+      for(var i=0;i<tabs.length;i++){ tabs[i].className = (tabs[i]===tab) ? 'tab on' : 'tab'; }
+      renderMarket();
+    });
+    $('klineIdxTabs').addEventListener('click', function(e){
+      var tab = e.target.closest ? e.target.closest('.tab') : null;
+      if(!tab) return;
+      var kidx = tab.getAttribute('data-kidx');
+      if(!kidx || kidx===state.klineIdx) return;
+      state.klineIdx = kidx;
       var tabs = this.querySelectorAll('.tab');
       for(var i=0;i<tabs.length;i++){ tabs[i].className = (tabs[i]===tab) ? 'tab on' : 'tab'; }
       renderMarket();
