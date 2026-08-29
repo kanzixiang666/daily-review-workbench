@@ -1,0 +1,19 @@
+# 平台数据（内存/临时文件不入库，含 token 风险）
+.workbuddy/tmp_market/
+
+# mock 页可随时由源码重建，不入库
+data/mock/
+
+# 系统文件
+.DS_Store
+*.log
+
+# 编辑器
+.idea/
+.vscode/
+*.swp
+
+# Python
+__pycache__/
+*.pyc
+.venv/
