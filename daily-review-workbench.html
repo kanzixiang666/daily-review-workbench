@@ -720,7 +720,7 @@
         var sum = 0;
         for(var q=k-n+1; q<=k; q++) sum += points[q].c;
         var ma = sum/n;
-        path += x(k).toFixed(1) + ',' + y(ma).toFixed(1) + (cnt ? ' ' : '');
+        path += (cnt ? ' ' : '') + x(k).toFixed(1) + ',' + y(ma).toFixed(1);
         cnt++;
       }
       svg += '<polyline points="'+path+'" fill="none" stroke="'+MA[mi].col+'" stroke-width="1.4" opacity="0.9"/>';
