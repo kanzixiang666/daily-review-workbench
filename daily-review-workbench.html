@@ -713,7 +713,9 @@
     ];
     for(var mi=0; mi<MA.length; mi++){
       var n = MA[mi].n;
-      if(points.length < n) continue;
+      // 数据不足跳过：至少需要 1.5 倍于周期数的数据点才画（避免 MA60 只有几个点画成伪横线）
+      var need = Math.ceil(n * 1.5);
+      if(points.length < need) continue;
       var path = '';
       var cnt = 0;
       for(var k=n-1; k<points.length; k++){
@@ -725,10 +727,10 @@
       }
       svg += '<polyline points="'+path+'" fill="none" stroke="'+MA[mi].col+'" stroke-width="1.4" opacity="0.9"/>';
     }
-    // 均线图例
+    // 均线图例（与绘制同一门槛）
     var legend = '';
     for(var li=0; li<MA.length; li++){
-      if(points.length >= MA[li].n) legend += '<rect x="'+(L+li*66)+'" y="3" width="10" height="3" rx="1.5" fill="'+MA[li].col+'"/><text x="'+(L+li*66+13)+'" y="6.5" font-size="10" fill="#8fa0b3">MA'+MA[li].n+'</text>';
+      if(points.length >= Math.ceil(MA[li].n * 1.5)) legend += '<rect x="'+(L+li*66)+'" y="3" width="10" height="3" rx="1.5" fill="'+MA[li].col+'"/><text x="'+(L+li*66+13)+'" y="6.5" font-size="10" fill="#8fa0b3">MA'+MA[li].n+'</text>';
     }
     svg += legend;
     var last=points[points.length-1];
