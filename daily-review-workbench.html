@@ -202,7 +202,14 @@
       <div class="idx-sub" data-page-node-id="NLVglXAzmdQr0dYyzIef3E">两市成交额<b id="amtVal" data-sp-bindable="database" data-sp-database-id="cLcxNlQynomKfZa92Ptryc" data-page-node-id="iyBEZ7EKhtw1Isxx3OHKiR">--</b></div>
       <div class="idx-sub" data-page-node-id="X9eOa7ui2ixGGnsCmG0Fid">市场情绪<b id="moodBadge" data-sp-bindable="database" data-sp-database-id="cLcxNlQynomKfZa92Ptryc" data-page-node-id="OTNv2qmfPFDyKxRpJQqHP5">--</b></div>
     </div>
-    <h3 data-page-node-id="fooUqA4mgOAYt2TgJbhb0x">上证指数近 12 日 K 线（红涨绿跌）</h3>
+    <h3 data-page-node-id="fooUqA4mgOAYt2TgJbhb0x">上证指数 K 线（红涨绿跌）</h3>
+    <div class="tabs" id="klineRanges" style="margin-top:4px">
+      <button class="tab" type="button" data-range="12">近12日</button>
+      <button class="tab on" type="button" data-range="1m">近1月</button>
+      <button class="tab" type="button" data-range="3m">近3月</button>
+      <button class="tab" type="button" data-range="6m">近6月</button>
+      <button class="tab" type="button" data-range="1y">近1年</button>
+    </div>
     <div id="sparkWrap" class="chart" data-sp-bindable="database" data-sp-database-id="cLcxNlQynomKfZa92Ptryc" data-page-node-id="2vIGGGQPmGzpZuD6USm0Da"></div>
     <h3>涨停 / 跌停统计</h3>
     <div id="limitWrap" data-sp-bindable="database" data-sp-database-id="zAZyyUzHJidu3Z2TEdg3qv"><p class="muted">加载中…</p></div>
@@ -335,6 +342,7 @@
     editingPosId: null,
     intradayIdx: 'sh',
     intradayStep: 1,
+    klineRange: '1m',
     schemaOptions: {}   // { '类型': [{text,id}] }
   };
 
@@ -689,6 +697,33 @@
       svg += '<line x1="'+cx.toFixed(1)+'" y1="'+hy.toFixed(1)+'" x2="'+cx.toFixed(1)+'" y2="'+ly.toFixed(1)+'" stroke="'+col+'" stroke-width="1"/>';
       svg += '<rect x="'+(cx-cw/2).toFixed(1)+'" y="'+bodyTop.toFixed(1)+'" width="'+cw.toFixed(1)+'" height="'+bodyH.toFixed(1)+'" fill="'+col+'"'+(up?'':' opacity="0.92"')+'/>';
     }
+    // 均线 MA5/10/20/60（数据不足自动跳过）
+    var MA = [
+      { n: 5,  col: '#ffb84d' },
+      { n: 10, col: '#7fb4ff' },
+      { n: 20, col: '#d97bd9' },
+      { n: 60, col: '#6fd9a0' }
+    ];
+    for(var mi=0; mi<MA.length; mi++){
+      var n = MA[mi].n;
+      if(points.length < n) continue;
+      var path = '';
+      var cnt = 0;
+      for(var k=n-1; k<points.length; k++){
+        var sum = 0;
+        for(var q=k-n+1; q<=k; q++) sum += points[q].c;
+        var ma = sum/n;
+        path += x(k).toFixed(1) + ',' + y(ma).toFixed(1) + (cnt ? ' ' : '');
+        cnt++;
+      }
+      svg += '<polyline points="'+path+'" fill="none" stroke="'+MA[mi].col+'" stroke-width="1.4" opacity="0.9"/>';
+    }
+    // 均线图例
+    var legend = '';
+    for(var li=0; li<MA.length; li++){
+      if(points.length >= MA[li].n) legend += '<rect x="'+(L+li*66)+'" y="3" width="10" height="3" rx="1.5" fill="'+MA[li].col+'"/><text x="'+(L+li*66+13)+'" y="6.5" font-size="10" fill="#8fa0b3">MA'+MA[li].n+'</text>';
+    }
+    svg += legend;
     var last=points[points.length-1];
     svg += '<text x="'+(x(points.length-1)+8).toFixed(1)+'" y="'+(y(last.c)+4).toFixed(1)+'" font-size="14" font-weight="700" fill="#e6edf3">'+last.c.toFixed(2)+'</text>';
     svg += '<text x="'+L+'" y="'+(H-8)+'" font-size="11" fill="#8fa0b3">'+esc(points[0].d)+'</text>';
@@ -805,22 +840,83 @@
   }
 
   function aggIntraday(raw, step){
-    // 把 1 分钟线按 step 聚合：每 step 分钟取最后一个点的价格与累计成交额
+    // 把 1 分钟线按 step 聚合为 OHLC：open=区间首点价, close=区间末点价, high/low=区间极值, amt=区间末累计额
     if(!raw || !raw.pts || !raw.pts.length) return raw;
     if(!step || step<=1) return raw;
     var pts = raw.pts, amt = raw.amt || [];
     var n = Math.ceil(pts.length/step);
-    var o = { pts: [], amt: [] };
+    var o = { pts: [], amt: [], ohlc: true };
     for(var i=0;i<n;i++){
-      var end = Math.min((i+1)*step, pts.length)-1;
-      var p = pts[end];
-      o.pts.push([p[0], p[1]]);
+      var start = i*step, end = Math.min((i+1)*step, pts.length)-1;
+      var oi = Number(pts[start][1]), ci = Number(pts[end][1]);
+      var hi = oi, lo = oi;
+      for(var m=start; m<=end; m++){
+        var v = Number(pts[m][1]);
+        if(v>hi) hi=v;
+        if(v<lo) lo=v;
+      }
+      o.pts.push([pts[start][0], ci]);
       if(amt.length){
         var a = amt[Math.min(end, amt.length-1)];
         o.amt.push([a[0], a[1]]);
       }
+      // 附带 OHLC 供 K 线渲染
+      o.ohlcArr = o.ohlcArr || [];
+      o.ohlcArr.push({ t: pts[start][0], o: oi, h: hi, l: lo, c: ci });
     }
     return o;
+  }
+
+  function intradayKlineSVG(d){
+    // 分时 K 线（蜡烛图 + 累计成交额），d.ohlcArr 为聚合后的 OHLC
+    var bars = d.ohlcArr, amt = d.amt;
+    if(!bars || bars.length<2) return '<p class="muted">分时数据不完整</p>';
+    var W=680, H=210, L=8, R=64;
+    var pT=12, pB=108, aT=128, aB=182;
+    var min=Infinity, max=-Infinity, avals=[];
+    for(var i=0;i<bars.length;i++){
+      if(bars[i].l<min)min=bars[i].l;
+      if(bars[i].h>max)max=bars[i].h;
+    }
+    for(var a=0;a<amt.length;a++){ if(amt[a][1]!==null && !isNaN(Number(amt[a][1]))) avals.push(Number(amt[a][1])); }
+    if(min===max){ min=min-1; max=max+1; }
+    var span=max-min, aMax = avals.length ? Math.max.apply(null,avals) : 1;
+    function x(i){ return L + (W-L-R) * (i/(bars.length-1)); }
+    function y(v){ return pT + (pB-pT) * (1-(v-min)/span); }
+    function ya(v){ return aT + (aB-aT) * (1-v/aMax); }
+    var cw = Math.max(4, Math.min(18, ((W-L-R)/bars.length) * 0.62));
+    var stepTxt = d.stepTxt || '';
+    var svg = '<svg viewBox="0 0 680 '+H+'" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="分时K线">';
+    svg += '<text x="'+L+'" y="9" font-size="11" fill="#8fa0b3">K线（'+esc(stepTxt)+'）</text>';
+    svg += '<line x1="'+L+'" y1="'+(pB+4)+'" x2="'+(W-R)+'" y2="'+(pB+4)+'" stroke="#223146" stroke-width="1"/>';
+    var base = bars[0].o;
+    svg += '<line x1="'+L+'" y1="'+y(base).toFixed(1)+'" x2="'+(W-R)+'" y2="'+y(base).toFixed(1)+'" stroke="#2c3d57" stroke-dasharray="4 4"/>';
+    svg += '<text x="'+(W-R)+'" y="'+(y(base)-3).toFixed(1)+'" font-size="10" fill="#8fa0b3" text-anchor="end">开盘 '+base.toFixed(2)+'</text>';
+    for(var j=0;j<bars.length;j++){
+      var b=bars[j];
+      var up = b.c >= b.o;
+      var col = up ? '#ff5d5d' : '#2bd576';
+      var cx=x(j), oy=y(b.o), cy=y(b.c), hy=y(b.h), ly=y(b.l);
+      var bodyTop=Math.min(oy,cy), bodyH=Math.max(Math.abs(cy-oy),1.2);
+      svg += '<line x1="'+cx.toFixed(1)+'" y1="'+hy.toFixed(1)+'" x2="'+cx.toFixed(1)+'" y2="'+ly.toFixed(1)+'" stroke="'+col+'" stroke-width="1"/>';
+      svg += '<rect x="'+(cx-cw/2).toFixed(1)+'" y="'+bodyTop.toFixed(1)+'" width="'+cw.toFixed(1)+'" height="'+bodyH.toFixed(1)+'" fill="'+col+'"'+(up?'':' opacity="0.92"')+'/>';
+    }
+    var last=bars[bars.length-1];
+    svg += '<text x="'+(W-R)+'" y="'+(y(last.c)+4).toFixed(1)+'" font-size="12.5" font-weight="700" fill="#e6edf3">'+last.c.toFixed(2)+'</text>';
+    svg += '<text x="'+L+'" y="'+(pB+4)+'" font-size="10.5" fill="#8fa0b3">'+esc(bars[0].t)+'</text>';
+    svg += '<text x="'+(W-R)+'" y="'+(pB+4)+'" font-size="10.5" fill="#8fa0b3" text-anchor="end">'+esc(bars[bars.length-1].t)+'</text>';
+    if(avals.length>=2){
+      svg += '<text x="'+L+'" y="'+(aT-4)+'" font-size="11" fill="#8fa0b3">成交额累计（亿）</text>';
+      var astr='';
+      for(var k=0;k<amt.length;k++){ astr += x(Math.min(k,amt.length-1)).toFixed(1)+','+ya(Number(amt[k][1])).toFixed(1)+' '; }
+      svg += '<polygon points="'+L+','+(aB)+' '+astr+(W-R)+','+(aB)+'" fill="rgba(79,140,255,0.14)"/>';
+      svg += '<polyline points="'+astr+'" fill="none" stroke="#4f8cff" stroke-width="1.6" stroke-linejoin="round"/>';
+      svg += '<text x="'+(W-R)+'" y="'+(ya(avals[avals.length-1])+4).toFixed(1)+'" font-size="11.5" fill="#7fb4ff">'+avals[avals.length-1].toFixed(0)+' 亿</text>';
+      svg += '<text x="'+L+'" y="'+(aB+14)+'" font-size="10.5" fill="#8fa0b3">'+esc(amt[0][0])+'</text>';
+      svg += '<text x="'+(W-R)+'" y="'+(aB+14)+'" font-size="10.5" fill="#8fa0b3" text-anchor="end">'+esc(amt[amt.length-1][0])+'</text>';
+    }
+    svg += '</svg>';
+    return svg;
   }
 
   function renderIntraday(){
@@ -839,11 +935,13 @@
     var step = state.intradayStep || 1;
     var stepTxt = step>=60 ? (step/60)+'小时' : step+'分';
     var out = aggIntraday(src, step);
-    if(out !== src){
-      // 聚合模式下，把点数直接传给渲染（时间轴自动按点数均分）
-      out.step = step; out.stepTxt = stepTxt;
+    out.step = step; out.stepTxt = stepTxt;
+    if(step > 1){
+      // 多周期用 K 线展示
+      wrap.innerHTML = intradayKlineSVG(out);
+    } else {
+      wrap.innerHTML = intradaySVG(out);
     }
-    wrap.innerHTML = intradaySVG(out);
   }
 
   function renderMarket(){
@@ -889,7 +987,14 @@
         pts.push({ d: d.slice(5), v: v });
       }
     }
-    pts = pts.slice(-12);
+    // 范围筛选：近12日/1月(约22交易日)/3月/6月/1年
+    var range = state.klineRange || '1m';
+    var n = 12;
+    if(range==='1m') n = 22;
+    else if(range==='3m') n = 66;
+    else if(range==='6m') n = 130;
+    else if(range==='1y') n = 250;
+    pts = pts.slice(-n);
     $('sparkWrap').innerHTML = sparklineSVG(pts);
     $('sectorList').innerHTML = sectorSVG(parseSectors(rec['板块资金流向']));
     srcBadge.textContent = rec['数据来源'] || '数据';
@@ -1595,6 +1700,16 @@
       var tabs = this.querySelectorAll('.tab');
       for(var i=0;i<tabs.length;i++){ tabs[i].className = (tabs[i]===tab) ? 'tab on' : 'tab'; }
       renderIntraday();
+    });
+    $('klineRanges').addEventListener('click', function(e){
+      var tab = e.target.closest ? e.target.closest('.tab') : null;
+      if(!tab) return;
+      var range = tab.getAttribute('data-range');
+      if(!range || range===state.klineRange) return;
+      state.klineRange = range;
+      var tabs = this.querySelectorAll('.tab');
+      for(var i=0;i<tabs.length;i++){ tabs[i].className = (tabs[i]===tab) ? 'tab on' : 'tab'; }
+      renderMarket();
     });
     $('btnCloseStock').addEventListener('click', closeStockModal);
     $('stockOverlay').addEventListener('click', function(e){ if(e.target===this) closeStockModal(); });
