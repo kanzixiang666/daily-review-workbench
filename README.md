@@ -53,3 +53,18 @@ docs/                         用户模板
 - 改页面 → 本地 mock 验证（data/mock/）→ import_html.py 重导入 → `git add -A && git commit -m "vN: ..."`
 - 数据操作 → 脚本存 scripts/，原始/输出/验证分存 data/raw|output|verify，可完整复现
 - 详细踩坑记录见 `.workbuddy/memory/2026-08-29.md`
+
+## 新会话恢复上下文（给 AI/模型）
+开始工作前按顺序读取：
+1. `.workbuddy/memory/MEMORY.md` —— 项目长期笔记（核心资产 ID、约定、铁律）
+2. `.workbuddy/memory/2026-08-29.md` —— 当日工作日志（含踩坑细节）
+3. `CHANGELOG.md` —— 版本历史，快速了解已做什么
+4. `daily-review-workbench.html` —— 页面源码（唯一事实源），重点看 state/loadData/refreshAll/渲染函数
+5. `scripts/build_payload.py` —— 数据组装示例
+
+关键铁律：
+- 页面 databaseId 必须用字符串字面量（DSDK lint），多表页面每表写专用查询函数
+- 自动化禁止覆盖用户手填的 大盘判断/持仓操作/明日计划/风险提示
+- 表2 股票代码用无前缀 6 位（002353），勿带 sz/sh
+- 改版重导入必须带 `--node-block-id yBrpn61HWbuSLSU2lvWdjx`，否则产生重复页
+- token（connect_open_platform）有效期 1800 秒，过期换新即可
