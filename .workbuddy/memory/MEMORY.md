@@ -26,3 +26,10 @@
 - 示例数据标记：数据来源=示例数据，页面「清空示例」可一键删除（现已覆盖表1/2/4）。
 - 页面 v2 功能：分时走势 tab（模块①）、财经日历（今日要处理卡片内）、个股走势弹窗（模块③行内「走势」按钮）。
 - 踩坑细节见 2026-08-29 日志（DSDK lint 字面量要求、RRULE 双 BYHOUR 写法、token 时效、import_html 重导必须带 --node-block-id 否则产生重复页）。
+
+## 数据源速查（2026-08-30 更新）
+- **板块涨跌幅历史**：同花顺行业板块K线 `https://d.10jqka.com.cn/v6/line/bk_{881xxx}/01/last.js`（881100~881200 共 68 个行业，2007 年至今；每行「日期,开,高,低,收,量,额」；`scripts/fetch_boards.py`）
+- **板块资金流（当日）**：东财 `push2delay.eastmoney.com/api/qt/clist/get?fs=m:90+t:2&fid=f62`（f14 名称/f3 涨跌幅/f62 主力净流入元）；历史仅 westock data_sector ranking+date（网关 proxy_gone 易挂，恢复后可用于补历史 inflow）
+- **涨停池**：同花顺 `dataapi/limit_up/limit_up_pool?date=YYYYMMDD`（**limit≤200 必须分页**，字段 reason_type 概念+分隔/limit_up_type/high_days/first_limit_up_time Unix秒）；东财 `push2ex.eastmoney.com/getTopicZTPool`（**只保留近 2 周历史**，字段 hybk 行业/fbt 封板时间/lbc 连板）
+- **跌停池**：仅东财 `getTopicDTPool`（同 2 周限制；价格 p 为千分位 /1000）
+- 东财 push2his 长期不可达（历史K线/资金流历史拿不到）；datacenter-web 板块资金流报表名 RPT_* 均不存在；腾讯板块指数（pt01801080）无历史K线
