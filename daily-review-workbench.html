@@ -160,6 +160,13 @@
   .jd-verdict.wrong{color:var(--down);background:rgba(43,213,118,.12);}
   .jd-verdict.wait{color:var(--muted);background:var(--card2);border:1px solid var(--border);}
   @media(max-width:768px){ .jd-row{grid-template-columns:1fr 1fr;} .jd-row .jd-txt,.jd-row .jd-verdict{grid-column:1/-1;} }
+  .jdb-wrap{display:flex;flex-direction:column;gap:6px;margin-top:8px;padding-top:8px;border-top:1px dashed var(--border2);}
+  .jdb-sec{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+  .jdb-title{font-size:11.5px;color:var(--muted);flex:none;}
+  .jdb-chip{display:inline-flex;align-items:center;gap:5px;background:var(--card2);border:1px solid var(--border);border-radius:6px;padding:3px 8px;font-size:11.5px;}
+  .jdb-chip .jdb-name{color:var(--text);}
+  .jdb-chip .jdb-n{color:var(--muted);}
+  .jdb-chip b.ok{color:var(--up);} .jdb-chip b.bad{color:var(--down);}
   #reviewForm{display:flex;flex-direction:column;gap:12px;}
   #reviewForm label{display:flex;flex-direction:column;gap:6px;font-size:13px;color:var(--muted);}
   textarea,input[type=text],input[type=number],input:not([type]){background:var(--card2);border:1px solid var(--border2);color:var(--text);border-radius:9px;padding:10px 12px;font-size:16px;min-height:44px;width:100%;font-family:inherit;}
@@ -321,8 +328,8 @@
     <div id="holdBars" class="chart" data-sp-bindable="database" data-sp-database-id="rOEUCAdnBUZXNJpMNg1WNd" data-page-node-id="2hbA8eUcYNN2ih6yXXNj0E"></div>
     <div class="tablewrap" data-page-node-id="Kdfyt6ZcLbz1SZgeOjT2Na">
       <table id="holdTable" data-page-node-id="WSnhJZgnujRG0JTcOvVE3F">
-        <thead data-page-node-id="gSyCVRCpqc7Rkc2XBD9RrX"><tr data-page-node-id="nBZzA4lhMzKMK3IHeC3w6f"><th data-page-node-id="HLM71CVM1mX0CV3DUo12Mc">股票</th><th data-page-node-id="jUygHEgB4k2AStbGAxMUWp">收盘价</th><th data-page-node-id="aItV4u2ALQadVVXjtyNjCz">涨跌幅</th><th data-page-node-id="Huvv788J2Bm5DK2DsyFVFz">相对上证</th><th data-page-node-id="wjDAXcSxii4x4mlOdYC8H5">组合贡献</th><th data-page-node-id="i2nJUwD7KmOOa2C3Tp4un1">触发提示</th><th>走势</th></tr></thead>
-        <tbody id="holdTbody" data-sp-bindable="database" data-sp-database-id="rOEUCAdnBUZXNJpMNg1WNd" data-page-node-id="d7bf9yW8ETBqk0ohOjgCcL"><tr data-page-node-id="5Q8HkE6qWv3X8d75x7Wuj6"><td colspan="7" class="muted" data-page-node-id="0lhS2Ut73Q0ZgjZG5GHXku">加载中…</td></tr></tbody>
+        <thead data-page-node-id="gSyCVRCpqc7Rkc2XBD9RrX"><tr data-page-node-id="nBZzA4lhMzKMK3IHeC3w6f"><th data-page-node-id="HLM71CVM1mX0CV3DUo12Mc">股票</th><th data-page-node-id="jUygHEgB4k2AStbGAxMUWp">收盘价</th><th data-page-node-id="aItV4u2ALQadVVXjtyNjCz">涨跌幅</th><th>浮动盈亏</th><th data-page-node-id="Huvv788J2Bm5DK2DsyFVFz">相对上证</th><th data-page-node-id="wjDAXcSxii4x4mlOdYC8H5">组合贡献</th><th data-page-node-id="i2nJUwD7KmOOa2C3Tp4un1">触发提示</th><th>走势</th></tr></thead>
+        <tbody id="holdTbody" data-sp-bindable="database" data-sp-database-id="rOEUCAdnBUZXNJpMNg1WNd" data-page-node-id="d7bf9yW8ETBqk0ohOjgCcL"><tr data-page-node-id="5Q8HkE6qWv3X8d75x7Wuj6"><td colspan="8" class="muted" data-page-node-id="0lhS2Ut73Q0ZgjZG5GHXku">加载中…</td></tr></tbody>
       </table>
     </div>
     <h3 data-page-node-id="oMTWLGo4PkkFlVydrfwWaU">组合（等权）vs 上证 累计走势 · 近 20 个交易日</h3>
@@ -388,6 +395,12 @@
         <button type="button" class="btn primary" id="judgeSaveBtn">保存判断</button>
         <span id="judgeStatus"></span>
       </div>
+    </div>
+    <div class="tabs" id="judgePeriods" style="margin-top:4px">
+      <button class="tab" type="button" data-period="1">T+1</button>
+      <button class="tab on" type="button" data-period="3">T+3</button>
+      <button class="tab" type="button" data-period="5">T+5</button>
+      <button class="tab" type="button" data-period="20">T+20</button>
     </div>
     <div id="judgeStats" class="judge-stats"></div>
     <div id="judgeList" data-sp-bindable="database" data-sp-database-id="my16urLMZmIQjfrRqUasAy"><p class="muted">加载中…</p></div>
@@ -460,6 +473,7 @@
     editingPosId: null,
     intradayIdx: 'sh',
     intradayStep: 1,
+    judgePeriod: 3,
     klineRange: '1m',
     klineIdx: 'sh',
     schemaOptions: {}   // { '类型': [{text,id}] }
@@ -1306,12 +1320,12 @@
     if(!list.length){
       sumEl.innerHTML = '<div class="s">该日无持仓行情数据</div>';
       $('holdBars').innerHTML = '<p class="muted">该日无持仓行情数据</p>';
-      $('holdTbody').innerHTML = '<tr><td colspan="7" class="muted">该日无持仓行情数据</td></tr>';
+      $('holdTbody').innerHTML = '<tr><td colspan="8" class="muted">该日无持仓行情数据</td></tr>';
       $('cumChart').innerHTML = '<p class="muted">数据不足</p>';
       return;
     }
 
-    var avg=0, upCnt=0, beatCnt=0, totalMv=0, portRet=0, hasMv=false;
+    var avg=0, upCnt=0, beatCnt=0, totalMv=0, totalCost=0, portRet=0, hasMv=false, hasCost=false;
     for(var i=0;i<list.length;i++){
       var p = list[i].pct||0;
       avg += p;
@@ -1323,6 +1337,11 @@
         if(!isNaN(close)){
           hasMv = true;
           totalMv += close * pos['持股数'];
+          var cost = Number(pos['成本价']);
+          if(!isNaN(cost) && cost>0){
+            hasCost = true;
+            totalCost += cost * pos['持股数'];
+          }
         }
       }
     }
@@ -1340,6 +1359,9 @@
         }
       }
     }
+    // 组合浮动盈亏
+    var portPnl = (hasMv && hasCost) ? (totalMv - totalCost) : null;
+    var portPnlPct = (hasMv && hasCost && totalCost>0) ? (totalMv/totalCost-1)*100 : null;
 
     var html = '';
     html += '<div class="s">组合等权平均<b class="'+pctCls(avg)+'">'+fmtPct(avg)+'</b></div>';
@@ -1348,6 +1370,10 @@
     if(hasMv){
       html += '<div class="s">组合当日估算收益<b class="'+pctCls(portRet)+'">'+fmtPct(portRet)+'</b></div>';
       html += '<div class="s">持仓市值<b>¥ '+(totalMv/10000).toFixed(2)+' 万</b></div>';
+    }
+    if(portPnl!==null && portPnlPct!==null){
+      html += '<div class="s">组合浮动盈亏<b class="'+pctCls(portPnl)+'">¥ '+(portPnl/10000).toFixed(2)+' 万</b></div>';
+      html += '<div class="s">总收益率<b class="'+pctCls(portPnlPct)+'">'+fmtPct(portPnlPct)+'</b></div>';
     }
     sumEl.innerHTML = html;
 
@@ -1375,7 +1401,21 @@
           trig='<span class="neartrig">接近/达到加仓价 '+addp+'</span>';
         }
       }
-      tbody += '<tr><td>'+esc(name)+wtag+'</td><td>'+esc(closeV)+'</td><td class="'+pctCls(it.pct)+'">'+fmtPct(it.pct)+'</td><td class="'+relCls+'">'+esc(rel)+'</td><td class="'+contribCls+'">'+esc(contribTxt)+'</td><td>'+trig+'</td>'
+      // 个股浮动盈亏
+      var pnlTxt='--', pnlCls='flat';
+      if(pos){
+        var costN=Number(pos['成本价']), sharesN=Number(pos['持股数']);
+        var closeN2=Number(it.row['收盘价']);
+        if(!isNaN(costN) && costN>0 && !isNaN(sharesN) && sharesN>0 && !isNaN(closeN2)){
+          var pnlAmt=(closeN2-costN)*sharesN;
+          var pnlPct=(closeN2/costN-1)*100;
+          pnlCls=pctCls(pnlPct);
+          pnlTxt='<span class="muted" style="font-size:11px;">成本 '+costN.toFixed(2)+'</span><br>'
+            + '<b class="'+pnlCls+'">'+(pnlAmt>0?'+':'')+(pnlAmt/10000).toFixed(2)+' 万</b>'
+            + ' <span class="'+pnlCls+'" style="font-size:11px;">'+fmtPct(pnlPct)+'</span>';
+        }
+      }
+      tbody += '<tr><td>'+esc(name)+wtag+'</td><td>'+esc(closeV)+'</td><td class="'+pctCls(it.pct)+'">'+fmtPct(it.pct)+'</td><td>'+pnlTxt+'</td><td class="'+relCls+'">'+esc(rel)+'</td><td class="'+contribCls+'">'+esc(contribTxt)+'</td><td>'+trig+'</td>'
         + '<td><button class="btn small ghost" type="button" data-act="chart" data-code="'+esc(code)+'">走势</button></td></tr>';
     }
     $('holdTbody').innerHTML = tbody;
@@ -1698,7 +1738,8 @@
     sel.innerHTML = html;
   }
   // 回测验证：判断日之后第 n 个交易日的收盘 vs 判断日收盘（用表2）
-  function judgeVerdict(item){
+  function judgeVerdict(item, days){
+    days = days || 3;
     var code = String(item['股票代码']||'').trim();
     var jd = dateKey(item['交易日期']);
     var dir = String(item['判断方向']||'').trim();
@@ -1707,11 +1748,11 @@
     var base = null;
     for(var i=0;i<rows.length;i++){ if(String(rows[i]['股票代码']).trim()===code){ base = Number(rows[i]['收盘价']); break; } }
     if(!base || isNaN(base)) return { st: 'wait', txt: '缺基准价' };
-    // 找判断日之后第 3 个交易日该股收盘价
+    // 找判断日之后第 days 个交易日该股收盘价
     var idx = -1;
     for(var k=0;k<state.db1dates.length;k++){ if(state.db1dates[k]===jd){ idx = k; break; } }
-    if(idx<0 || idx+3 >= state.db1dates.length) return { st: 'wait', txt: '待验证' };
-    var later = state.db1dates[idx+3];
+    if(idx<0 || idx+days >= state.db1dates.length) return { st: 'wait', txt: '待验证' };
+    var later = state.db1dates[idx+days];
     var laterRows = state.db2map[later] || [];
     var lv = null;
     for(var j=0;j<laterRows.length;j++){ if(String(laterRows[j]['股票代码']).trim()===code){ lv = Number(laterRows[j]['收盘价']); break; } }
@@ -1721,6 +1762,41 @@
     if(dir==='看空') return chg < -0.3 ? { st: 'right', txt: '正确 '+chg.toFixed(1)+'%' } : (chg > 0.3 ? { st: 'wrong', txt: '错误 +'+chg.toFixed(1)+'%' } : { st: 'wait', txt: '走平' });
     return { st: 'wait', txt: '待验证' };
   }
+  function judgeBreakdown(period){
+    // 按 股票/信心/方向 细分准确率
+    var byStock = {}, byConf = {}, byDir = {};
+    state.judgeList.forEach(function(it){
+      var vd = judgeVerdict(it.r, period);
+      if(vd.st==='wait') return;
+      var code = it.r['股票代码']||'?';
+      var conf = String(it.r['信心']||'中');
+      var dir = String(it.r['判断方向']||'中性');
+      ['stock','conf','dir'].forEach(function(kind){
+        var key = kind==='stock' ? code : (kind==='conf' ? conf : dir);
+        var bucket = kind==='stock' ? byStock : (kind==='conf' ? byConf : byDir);
+        if(!bucket[key]) bucket[key] = { n: 0, right: 0 };
+        bucket[key].n++;
+        if(vd.st==='right') bucket[key].right++;
+      });
+    });
+    function render(bucket, label, nameFn){
+      var keys = Object.keys(bucket).sort(function(a,b){ return bucket[b].n - bucket[a].n; });
+      if(!keys.length) return '';
+      var html = '<div class="jdb-sec"><span class="jdb-title">'+label+'</span>';
+      keys.forEach(function(k){
+        var b = bucket[k];
+        var acc = Math.round(b.right/b.n*100);
+        var nm = nameFn ? nameFn(k) : k;
+        html += '<span class="jdb-chip"><span class="jdb-name">'+esc(nm)+'</span> <span class="jdb-n">'+b.right+'/'+b.n+'</span> <b class="'+(acc>=50?'ok':'bad')+'">'+acc+'%</b></span>';
+      });
+      return html + '</div>';
+    }
+    var out = '';
+    out += render(byStock, '按股票', function(k){ return (state.posByCode[k] && state.posByCode[k]['股票名称']) || k; });
+    out += render(byConf, '按信心', function(k){ return k; });
+    out += render(byDir, '按方向', function(k){ return k; });
+    return out;
+  }
   function renderJudge(){
     var listEl = $('judgeList'), statsEl = $('judgeStats');
     if(!listEl) return;
@@ -1728,6 +1804,8 @@
     var jd = $('jDate');
     if(jd && !jd.value) jd.value = state.date || todayStr();
     var items = state.judgeList || [];
+    var period = state.judgePeriod || 3;
+    var periodTxt = 'T+'+period;
     if(!items.length){
       listEl.innerHTML = '<p class="muted">还没有个股判断。选一只持仓，写下方向、信心和理由，保存后会按 T+3 自动验证。</p>';
       if(statsEl) statsEl.innerHTML = '';
@@ -1737,7 +1815,7 @@
     var html = '';
     for(var i=0;i<items.length && i<30;i++){
       var it = items[i].r;
-      var vd = judgeVerdict(it);
+      var vd = judgeVerdict(it, period);
       if(vd.st==='right') stats.right++; else if(vd.st==='wrong') stats.wrong++; else stats.wait++;
       var dir = String(it['判断方向']||'中性');
       var dirCls = dir==='看多' ? 'bull' : (dir==='看空' ? 'bear' : 'neut');
@@ -1754,7 +1832,9 @@
     listEl.innerHTML = html;
     if(statsEl){
       var acc = (stats.right+stats.wrong) ? Math.round(stats.right/(stats.right+stats.wrong)*100) : '--';
-      statsEl.innerHTML = '判断 <b>'+stats.total+'</b> 条　正确 <b class="ok">'+stats.right+'</b>　错误 <b class="bad">'+stats.wrong+'</b>　待验证 <b>'+stats.wait+'</b>　准确率 <b>'+acc+'%</b>（按 T+3 收盘验证）';
+      var breakdown = judgeBreakdown(period);
+      statsEl.innerHTML = '判断 <b>'+stats.total+'</b> 条　正确 <b class="ok">'+stats.right+'</b>　错误 <b class="bad">'+stats.wrong+'</b>　待验证 <b>'+stats.wait+'</b>　准确率 <b>'+acc+'%</b>（按 '+periodTxt+' 验证）'
+        + '<div class="jdb-wrap">' + breakdown + '</div>';
     }
   }
   function saveJudge(){
@@ -1982,6 +2062,16 @@
       if(!b) return;
       var ts = this.querySelectorAll('.tab');
       for(var i=0;i<ts.length;i++){ ts[i].className = (ts[i]===b) ? 'tab on' : 'tab'; }
+    });
+    $('judgePeriods').addEventListener('click', function(e){
+      var b = e.target.closest ? e.target.closest('.tab') : null;
+      if(!b) return;
+      var period = parseInt(b.getAttribute('data-period'), 10);
+      if(!period || period===state.judgePeriod) return;
+      state.judgePeriod = period;
+      var ts = this.querySelectorAll('.tab');
+      for(var i=0;i<ts.length;i++){ ts[i].className = (ts[i]===b) ? 'tab on' : 'tab'; }
+      renderJudge();
     });
     $('r_todo').addEventListener('input', draftReviewSave);
     $('r_judge').addEventListener('input', draftReviewSave);
