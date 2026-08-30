@@ -118,6 +118,35 @@
   #judgeChain .jc-row .jc-none{color:var(--muted);font-size:12px;}
   #judgeChain .jc-row.jc-today{border-color:var(--accent);}
   @media(max-width:768px){ #judgeChain .jc-row{grid-template-columns:1fr 1fr;} #judgeChain .jc-row .jc-txt:nth-of-type(3),#judgeChain .jc-row .jc-txt:nth-of-type(4){grid-column:1/-1;} }
+  /* 个股判断与回测 */
+  .judge-form{display:flex;flex-direction:column;gap:10px;margin:4px 0 12px;}
+  .judge-form .jrow{display:flex;gap:14px;flex-wrap:wrap;align-items:center;}
+  .judge-form label{font-size:12.5px;color:var(--muted);display:flex;align-items:center;gap:6px;}
+  .judge-form select,.judge-form input[type=date]{background:var(--card2);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:6px 10px;font-size:13px;}
+  .judge-form .btn-group{display:inline-flex;gap:4px;}
+  .judge-form .btn-group .tab{background:var(--card2);border:1px solid var(--border);border-radius:6px;padding:4px 12px;font-size:12.5px;color:var(--muted);cursor:pointer;}
+  .judge-form .btn-group .tab.on{background:var(--accent);border-color:var(--accent);color:#fff;}
+  .judge-form textarea{min-height:64px;}
+  .judge-stats{display:flex;gap:14px;flex-wrap:wrap;margin:2px 0 10px;font-size:12.5px;color:var(--muted);}
+  .judge-stats b{color:var(--text);font-size:14px;}
+  .judge-stats .ok{color:var(--up);} .judge-stats .bad{color:var(--down);}
+  #judgeList{display:flex;flex-direction:column;gap:6px;}
+  .jd-row{display:grid;grid-template-columns:64px 92px 56px 1fr 74px;gap:8px;align-items:center;padding:8px 12px;border-radius:9px;background:var(--card2);border:1px solid var(--border);font-size:12.5px;}
+  .jd-row .jd-date{color:var(--muted);font-weight:600;}
+  .jd-row .jd-stock{color:var(--text);font-weight:600;}
+  .jd-badge{display:inline-block;padding:2px 8px;border-radius:5px;font-size:11.5px;font-weight:600;text-align:center;}
+  .jd-badge.bull{background:rgba(255,93,93,.14);color:var(--up);}
+  .jd-badge.bear{background:rgba(43,213,118,.14);color:var(--down);}
+  .jd-badge.neut{background:var(--card2);color:var(--muted);border:1px solid var(--border);}
+  .jd-badge.hi{background:rgba(255,183,77,.14);color:var(--gold);}
+  .jd-badge.mid{background:var(--card2);color:var(--muted);}
+  .jd-badge.lo{background:var(--card2);color:var(--muted);opacity:.7;}
+  .jd-row .jd-txt{color:var(--text);line-height:1.5;word-break:break-all;}
+  .jd-verdict{font-size:11.5px;font-weight:600;text-align:center;padding:2px 6px;border-radius:5px;}
+  .jd-verdict.right{color:var(--up);background:rgba(255,93,93,.12);}
+  .jd-verdict.wrong{color:var(--down);background:rgba(43,213,118,.12);}
+  .jd-verdict.wait{color:var(--muted);background:var(--card2);border:1px solid var(--border);}
+  @media(max-width:768px){ .jd-row{grid-template-columns:1fr 1fr;} .jd-row .jd-txt,.jd-row .jd-verdict{grid-column:1/-1;} }
   #reviewForm{display:flex;flex-direction:column;gap:12px;}
   #reviewForm label{display:flex;flex-direction:column;gap:6px;font-size:13px;color:var(--muted);}
   textarea,input[type=text],input[type=number],input:not([type]){background:var(--card2);border:1px solid var(--border2);color:var(--text);border-radius:9px;padding:10px 12px;font-size:16px;min-height:44px;width:100%;font-family:inherit;}
@@ -300,6 +329,48 @@
     </form>
   </section>
 
+  <section class="card">
+    <h2>
+      <svg class="hicon" viewBox="0 0 24 24" fill="none" stroke="#7fb4ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1v22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+      ⑤ 个股判断与回测
+    </h2>
+    <div class="judge-form">
+      <div class="jrow">
+        <label>股票
+          <select id="jStock"></select>
+        </label>
+        <label>日期
+          <input type="date" id="jDate">
+        </label>
+      </div>
+      <div class="jrow">
+        <label>判断方向
+          <span class="btn-group" id="jDir">
+            <button type="button" class="tab" data-dir="看多">看多</button>
+            <button type="button" class="tab on" data-dir="中性">中性</button>
+            <button type="button" class="tab" data-dir="看空">看空</button>
+          </span>
+        </label>
+        <label>信心
+          <span class="btn-group" id="jConf">
+            <button type="button" class="tab" data-conf="高">高</button>
+            <button type="button" class="tab on" data-conf="中">中</button>
+            <button type="button" class="tab" data-conf="低">低</button>
+          </span>
+        </label>
+      </div>
+      <label>判断内容（理由 / 目标位 / 触发条件）
+        <textarea id="jContent" placeholder="例：回踩 20 日线企稳，目标前高，跌破 30 日线止损"></textarea>
+      </label>
+      <div class="formrow">
+        <button type="button" class="btn primary" id="judgeSaveBtn">保存判断</button>
+        <span id="judgeStatus"></span>
+      </div>
+    </div>
+    <div id="judgeStats" class="judge-stats"></div>
+    <div id="judgeList" data-sp-bindable="database" data-sp-database-id="my16urLMZmIQjfrRqUasAy"><p class="muted">加载中…</p></div>
+  </section>
+
   <footer data-page-node-id="D5GOtKcAeG8MYrWZgLZd1B">数据来源：每日 8:30 / 15:30 自动抓取写入资料库数据表；复盘笔记手工填写。涨红跌绿，金额单位：亿（¥）。</footer>
 </main>
 
@@ -354,14 +425,15 @@
   var DB2_ID = 'rOEUCAdnBUZXNJpMNg1WNd';        // 每日持仓表现
   var DB3_ID = 'Ca9lZzGvP8gCYCWoXoljoT';        // 持仓清单
   var DB5_ID = 'zAZyyUzHJidu3Z2TEdg3qv';        // 涨跌停统计
+  var DB6_ID = 'my16urLMZmIQjfrRqUasAy';        // 个股判断
   var CACHE_KEY = 'wb_market_cache';
   var DRAFT_REVIEW = 'wb_market_draft_review';
   var DRAFT_POS = 'wb_market_draft_pos';
 
   var state = {
     date: '',
-    db1: [], db2: [], db3: [], db4: [], db5: [],
-    db1map: {}, db2map: {}, db1dates: [], posByCode: {}, limitMap: {},
+    db1: [], db2: [], db3: [], db4: [], db5: [], db6: [],
+    db1map: {}, db2map: {}, db1dates: [], posByCode: {}, limitMap: {}, judgeList: [],
     online: true,
     editingPosId: null,
     intradayIdx: 'sh',
@@ -483,6 +555,17 @@
       return acc;
     });
   }
+  function qJudge(cursor, acc){
+    var params = { databaseId: 'my16urLMZmIQjfrRqUasAy', pageSize: 100,
+      sorts: [{ property: '交易日期', direction: 'descending' }] };
+    if(cursor) params.startCursor = cursor;
+    return sdk().query(params).then(function(res){
+      var rows = (res && res.results) ? res.results : [];
+      acc = (acc||[]).concat(rows);
+      if(res && res.hasMore && res.nextCursor) return qJudge(res.nextCursor, acc);
+      return acc;
+    });
+  }
   function loadOptions(){
     var db = sdk();
     if(!db) return Promise.resolve();
@@ -498,9 +581,9 @@
   function loadData(){
     var db = sdk();
     if(!db){ goOffline('当前环境无在线数据能力'); return; }
-    Promise.all([qDaily(), qHold(), qPos(), qCal(), qLimit()])
+    Promise.all([qDaily(), qHold(), qPos(), qCal(), qLimit(), qJudge()])
       .then(function(rs){
-        state.db1 = rs[0]||[]; state.db2 = rs[1]||[]; state.db3 = rs[2]||[]; state.db4 = rs[3]||[]; state.db5 = rs[4]||[];
+        state.db1 = rs[0]||[]; state.db2 = rs[1]||[]; state.db3 = rs[2]||[]; state.db4 = rs[3]||[]; state.db5 = rs[4]||[]; state.db6 = rs[5]||[];
         state.online = true;
         saveCache();
         return loadOptions();
@@ -527,7 +610,7 @@
     state.online = false;
     var cache = storageGet(CACHE_KEY);
     if(cache){
-      state.db1 = cache.db1||[]; state.db2 = cache.db2||[]; state.db3 = cache.db3||[]; state.db4 = cache.db4||[]; state.db5 = cache.db5||[];
+      state.db1 = cache.db1||[]; state.db2 = cache.db2||[]; state.db3 = cache.db3||[]; state.db4 = cache.db4||[]; state.db5 = cache.db5||[]; state.db6 = cache.db6||[];
     }
     rebuildMaps();
     if(!state.db1map[state.date]){
@@ -540,9 +623,9 @@
     restoreDrafts();
     refreshAll();
   }
-  function saveCache(){ storageSet(CACHE_KEY, { db1: state.db1, db2: state.db2, db3: state.db3, db4: state.db4, db5: state.db5, at: Date.now() }); }
+  function saveCache(){ storageSet(CACHE_KEY, { db1: state.db1, db2: state.db2, db3: state.db3, db4: state.db4, db5: state.db5, db6: state.db6, at: Date.now() }); }
   function rebuildMaps(){
-    state.db1map = {}; state.db2map = {}; state.db1dates = []; state.posByCode = {}; state.limitMap = {};
+    state.db1map = {}; state.db2map = {}; state.db1dates = []; state.posByCode = {}; state.limitMap = {}; state.judgeList = [];
     state.db1.forEach(function(r){
       var k = dateKey(r['交易日期']);
       if(!k) return;
@@ -564,6 +647,11 @@
       var k = dateKey(r['交易日期']);
       if(k) state.limitMap[k] = r;
     });
+    state.db6.forEach(function(r){
+      var k = dateKey(r['交易日期']);
+      if(k) state.judgeList.push({ d: k, r: r });
+    });
+    state.judgeList.sort(function(a,b){ return a.d < b.d ? 1 : (a.d > b.d ? -1 : 0); });
   }
 
   /* ========== 统一刷新入口（渲染函数互不调用） ========== */
@@ -579,6 +667,7 @@
     renderPosTable();
     renderReview();
     renderJudgeChain();
+    renderJudge();
   }
 
   function renderSync(){
@@ -1569,6 +1658,116 @@
     });
   }
 
+  /* ========== 个股判断与回测 ========== */
+  function fillJudgeStockSelect(){
+    var sel = $('jStock');
+    if(!sel) return;
+    var html = '';
+    var codes = Object.keys(state.posByCode).sort();
+    for(var i=0;i<codes.length;i++){
+      var p = state.posByCode[codes[i]];
+      var nm = p['股票名称']||codes[i];
+      var tp = (p['类型']==='观察仓') ? '（观察）' : '';
+      html += '<option value="'+esc(codes[i])+'">'+esc(nm)+' '+esc(codes[i])+tp+'</option>';
+    }
+    sel.innerHTML = html;
+  }
+  // 回测验证：判断日之后第 n 个交易日的收盘 vs 判断日收盘（用表2）
+  function judgeVerdict(item){
+    var code = String(item['股票代码']||'').trim();
+    var jd = dateKey(item['交易日期']);
+    var dir = String(item['判断方向']||'').trim();
+    if(!code || !jd || !dir || dir==='中性') return { st: 'wait', txt: '中性不判' };
+    var rows = state.db2map[jd] || [];
+    var base = null;
+    for(var i=0;i<rows.length;i++){ if(String(rows[i]['股票代码']).trim()===code){ base = Number(rows[i]['收盘价']); break; } }
+    if(!base || isNaN(base)) return { st: 'wait', txt: '缺基准价' };
+    // 找判断日之后第 3 个交易日该股收盘价
+    var idx = -1;
+    for(var k=0;k<state.db1dates.length;k++){ if(state.db1dates[k]===jd){ idx = k; break; } }
+    if(idx<0 || idx+3 >= state.db1dates.length) return { st: 'wait', txt: '待验证' };
+    var later = state.db1dates[idx+3];
+    var laterRows = state.db2map[later] || [];
+    var lv = null;
+    for(var j=0;j<laterRows.length;j++){ if(String(laterRows[j]['股票代码']).trim()===code){ lv = Number(laterRows[j]['收盘价']); break; } }
+    if(!lv || isNaN(lv)) return { st: 'wait', txt: '待验证' };
+    var chg = (lv/base-1)*100;
+    if(dir==='看多') return chg > 0.3 ? { st: 'right', txt: '正确 +'+chg.toFixed(1)+'%' } : (chg < -0.3 ? { st: 'wrong', txt: '错误 '+chg.toFixed(1)+'%' } : { st: 'wait', txt: '走平' });
+    if(dir==='看空') return chg < -0.3 ? { st: 'right', txt: '正确 '+chg.toFixed(1)+'%' } : (chg > 0.3 ? { st: 'wrong', txt: '错误 +'+chg.toFixed(1)+'%' } : { st: 'wait', txt: '走平' });
+    return { st: 'wait', txt: '待验证' };
+  }
+  function renderJudge(){
+    var listEl = $('judgeList'), statsEl = $('judgeStats');
+    if(!listEl) return;
+    fillJudgeStockSelect();
+    var jd = $('jDate');
+    if(jd && !jd.value) jd.value = state.date || todayStr();
+    var items = state.judgeList || [];
+    if(!items.length){
+      listEl.innerHTML = '<p class="muted">还没有个股判断。选一只持仓，写下方向、信心和理由，保存后会按 T+3 自动验证。</p>';
+      if(statsEl) statsEl.innerHTML = '';
+      return;
+    }
+    var stats = { total: items.length, right: 0, wrong: 0, wait: 0 };
+    var html = '';
+    for(var i=0;i<items.length && i<30;i++){
+      var it = items[i].r;
+      var vd = judgeVerdict(it);
+      if(vd.st==='right') stats.right++; else if(vd.st==='wrong') stats.wrong++; else stats.wait++;
+      var dir = String(it['判断方向']||'中性');
+      var dirCls = dir==='看多' ? 'bull' : (dir==='看空' ? 'bear' : 'neut');
+      var conf = String(it['信心']||'中');
+      var confCls = conf==='高' ? 'hi' : (conf==='低' ? 'lo' : 'mid');
+      var vCls = vd.st==='right' ? 'right' : (vd.st==='wrong' ? 'wrong' : 'wait');
+      var dShort = String(it['交易日期']||'').slice(0,10).slice(5);
+      html += '<div class="jd-row"><span class="jd-date">'+esc(dShort)+'</span>'
+        + '<span class="jd-stock">'+esc(it['股票名称']||it['股票代码'])+'</span>'
+        + '<span><span class="jd-badge '+dirCls+'">'+esc(dir)+'</span> <span class="jd-badge '+confCls+'">'+esc(conf)+'</span></span>'
+        + '<span class="jd-txt">'+esc(it['判断内容']||'')+'</span>'
+        + '<span class="jd-verdict '+vCls+'">'+esc(vd.txt)+'</span></div>';
+    }
+    listEl.innerHTML = html;
+    if(statsEl){
+      var acc = (stats.right+stats.wrong) ? Math.round(stats.right/(stats.right+stats.wrong)*100) : '--';
+      statsEl.innerHTML = '判断 <b>'+stats.total+'</b> 条　正确 <b class="ok">'+stats.right+'</b>　错误 <b class="bad">'+stats.wrong+'</b>　待验证 <b>'+stats.wait+'</b>　准确率 <b>'+acc+'%</b>（按 T+3 收盘验证）';
+    }
+  }
+  function saveJudge(){
+    var btn = $('judgeSaveBtn');
+    var code = $('jStock').value, date = $('jDate').value;
+    var content = ($('jContent').value||'').trim();
+    if(!code || !date){ $('judgeStatus').textContent = '请选择股票和日期'; return; }
+    if(!content){ $('judgeStatus').textContent = '请填写判断内容'; return; }
+    var dir = '中性', conf = '中';
+    var dirs = $('jDir').querySelectorAll('.tab');
+    for(var i=0;i<dirs.length;i++){ if(dirs[i].className.indexOf('on')>=0) dir = dirs[i].getAttribute('data-dir'); }
+    var confs = $('jConf').querySelectorAll('.tab');
+    for(var j=0;j<confs.length;j++){ if(confs[j].className.indexOf('on')>=0) conf = confs[j].getAttribute('data-conf'); }
+    var pos = state.posByCode[code] || {};
+    var props = {
+      '交易日期': { date: date },
+      '股票代码': { text: code },
+      '股票名称': { text: pos['股票名称'] || code },
+      '判断方向': { select: dir },
+      '信心': { select: conf },
+      '判断内容': { text: content },
+      '数据来源': { select: '手动录入' }
+    };
+    var db = sdk();
+    if(!state.online || !db){ $('judgeStatus').textContent = '离线模式不能保存'; return; }
+    btn.disabled = true; btn.textContent = '保存中…';
+    db.addRecord({ databaseId: 'my16urLMZmIQjfrRqUasAy', properties: props }).then(function(){
+      $('judgeStatus').textContent = '已保存 ✓';
+      btn.disabled = false; btn.textContent = '保存判断';
+      $('jContent').value = '';
+      loadData();
+    }).catch(function(err){
+      console.error('[market] 判断保存失败:', err);
+      $('judgeStatus').textContent = '保存失败，请稍后重试';
+      btn.disabled = false; btn.textContent = '保存判断';
+    });
+  }
+
   function editPos(id){
     var rec = null;
     for(var i=0;i<state.db3.length;i++){
@@ -1736,6 +1935,19 @@
       if(this.value){ state.date = this.value; refreshAll(); }
     });
     $('reviewForm').addEventListener('submit', saveReview);
+    $('judgeSaveBtn').addEventListener('click', saveJudge);
+    $('jDir').addEventListener('click', function(e){
+      var b = e.target.closest ? e.target.closest('.tab') : null;
+      if(!b) return;
+      var ts = this.querySelectorAll('.tab');
+      for(var i=0;i<ts.length;i++){ ts[i].className = (ts[i]===b) ? 'tab on' : 'tab'; }
+    });
+    $('jConf').addEventListener('click', function(e){
+      var b = e.target.closest ? e.target.closest('.tab') : null;
+      if(!b) return;
+      var ts = this.querySelectorAll('.tab');
+      for(var i=0;i<ts.length;i++){ ts[i].className = (ts[i]===b) ? 'tab on' : 'tab'; }
+    });
     $('r_todo').addEventListener('input', draftReviewSave);
     $('r_judge').addEventListener('input', draftReviewSave);
     $('r_op').addEventListener('input', draftReviewSave);
