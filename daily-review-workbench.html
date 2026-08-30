@@ -29,18 +29,18 @@
   .btn.small{min-height:36px;padding:0 10px;font-size:13px;}
   .btn.ghost{background:transparent;}
   main{max-width:1060px;margin:0 auto;padding:16px;display:flex;flex-direction:column;gap:16px;}
-  /* 左侧模块导航（桌面端，紧凑图标式） */
-  #sideNav{position:fixed;left:14px;top:50%;transform:translateY(-50%);z-index:40;display:flex;flex-direction:column;gap:8px;}
-  #sideNav a{position:relative;display:flex;align-items:center;justify-content:center;width:38px;height:38px;border-radius:10px;color:var(--muted);text-decoration:none;border:1px solid transparent;transition:all .15s;}
-  #sideNav a .sn-ico{width:24px;height:24px;border-radius:7px;background:var(--card2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:var(--muted);flex:none;}
+  /* 左侧模块导航（桌面端，文字常显） */
+  #sideNav{position:fixed;left:14px;top:50%;transform:translateY(-50%);z-index:40;display:flex;flex-direction:column;gap:5px;}
+  #sideNav a{position:relative;display:flex;align-items:center;gap:7px;padding:6px 10px;border-radius:9px;color:var(--muted);text-decoration:none;border:1px solid transparent;transition:all .15s;white-space:nowrap;}
+  #sideNav a .sn-ico{width:20px;height:20px;border-radius:6px;background:var(--card2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:var(--muted);flex:none;}
+  #sideNav a .sn-txt{font-size:12.5px;color:var(--muted);}
   #sideNav a:hover{color:var(--text);border-color:var(--border2);}
   #sideNav a.on{background:var(--accent);border-color:var(--accent);}
   #sideNav a.on .sn-ico{background:rgba(255,255,255,.16);border-color:transparent;color:#fff;}
-  #sideNav a .sn-txt{display:none;position:absolute;left:calc(100% + 10px);top:50%;transform:translateY(-50%);background:#16212f;border:1px solid var(--border2);color:var(--text);padding:5px 10px;border-radius:7px;font-size:12px;white-space:nowrap;z-index:50;}
-  #sideNav a:hover .sn-txt{display:block;}
+  #sideNav a.on .sn-txt{color:#fff;}
   @media(max-width:1100px){ #sideNav{display:none;} }
   /* 导航显示时，内容区让出左侧空间避免重叠 */
-  @media(min-width:1101px){ main{padding-left:96px;} }
+  @media(min-width:1101px){ main{padding-left:152px;} }
   @media(max-width:900px){ main{padding:12px;} }
   .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;}
   .card h2{font-size:16px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
@@ -598,6 +598,9 @@
           state.schemaOptions[f.name] = f.config.options;
         }
       });
+      // schema 选项加载完成后，刷新持仓类型下拉（init 时可能尚未加载导致下拉为空）
+      fillTypeSelect();
+      fillJudgeStockSelect();
     }).catch(function(){ /* 选项加载失败时用文本兜底 */ });
   }
   function loadData(){
@@ -1512,7 +1515,7 @@
     var html='';
     for(var i=0;i<state.db3.length;i++){
       var p=state.db3[i];
-      var id=p['_id'];
+      var id=p['_id']||p['record_id'];
       var tp = p['类型']==='观察仓' ? '<span class="wtag watch">观察仓</span>' : '<span class="wtag hold">持仓</span>';
       html += '<tr><td>'+esc(p['股票名称']||'')+'<br><span class="muted" style="font-size:11px;">'+esc(p['股票代码']||'')+'</span></td>'
         + '<td>'+tp+'</td>'
@@ -1590,7 +1593,7 @@
     var rec = state.db1map[state.date];
     var p;
     if(state.online && db && rec){
-      p = db.updateRecord({ databaseId: DATABASE_ID, recordId: rec['_id'], properties: props });
+      p = db.updateRecord({ databaseId: DATABASE_ID, recordId: rec['_id']||rec['record_id'], properties: props });
     } else if(state.online && db){
       var full = {
         '交易日期': { date: state.date },
@@ -1793,7 +1796,7 @@
   function editPos(id){
     var rec = null;
     for(var i=0;i<state.db3.length;i++){
-      if(state.db3[i]['_id']===id){ rec = state.db3[i]; break; }
+      if((state.db3[i]['_id']||state.db3[i]['record_id'])===id){ rec = state.db3[i]; break; }
     }
     if(!rec) return;
     state.editingPosId = id;
@@ -1830,13 +1833,13 @@
   function clearSample(){
     var ids1 = [], ids2 = [], ids4 = [];
     for(var i=0;i<state.db1.length;i++){
-      if(state.db1[i]['数据来源']==='示例数据') ids1.push(state.db1[i]['_id']);
+      if(state.db1[i]['数据来源']==='示例数据') ids1.push(state.db1[i]['_id']||state.db1[i]['record_id']);
     }
     for(var j=0;j<state.db2.length;j++){
-      if(state.db2[j]['数据来源']==='示例数据') ids2.push(state.db2[j]['_id']);
+      if(state.db2[j]['数据来源']==='示例数据') ids2.push(state.db2[j]['_id']||state.db2[j]['record_id']);
     }
     for(var k=0;k<state.db4.length;k++){
-      if(state.db4[k]['数据来源']==='示例数据') ids4.push(state.db4[k]['_id']);
+      if(state.db4[k]['数据来源']==='示例数据') ids4.push(state.db4[k]['_id']||state.db4[k]['record_id']);
     }
     var total = ids1.length + ids2.length + ids4.length;
     if(!total){ alert('没有找到示例数据'); return; }
@@ -1937,6 +1940,16 @@
       o.value = opts[i].id;
       o.textContent = opts[i].text;
       sel.appendChild(o);
+    }
+    // 兜底：schema 选项缺失时用文本值，保证可选持仓/观察仓
+    if(!opts.length){
+      var fallback = ['持仓','观察仓'];
+      for(var j=0;j<fallback.length;j++){
+        var f = document.createElement('option');
+        f.value = fallback[j];
+        f.textContent = fallback[j];
+        sel.appendChild(f);
+      }
     }
     if(cur) sel.value = cur;
   }
