@@ -103,6 +103,21 @@
   .wtag.hold{background:#173247;color:#5db4ff;} .wtag.watch{background:#332a14;color:#e8b339;}
   .neartrig{color:var(--gold);font-size:11px;display:block;}
   /* 复盘 */
+  #judgeChain{display:flex;flex-direction:column;gap:7px;margin:4px 0 14px;}
+  #judgeChain .jc-head{font-size:13px;font-weight:600;color:var(--text);display:flex;align-items:center;gap:8px;}
+  #judgeChain .jc-head .jc-sub{font-size:11.5px;font-weight:400;color:var(--muted);}
+  #judgeChain .jc-empty{font-size:13px;color:var(--muted);padding:10px 12px;border-radius:9px;background:var(--card2);border:1px dashed var(--border2);}
+  #judgeChain .jc-row{display:grid;grid-template-columns:76px 62px 1fr 1fr;gap:10px;align-items:start;padding:9px 12px;border-radius:9px;background:var(--card2);border:1px solid var(--border);font-size:13px;}
+  #judgeChain .jc-row .jc-date{color:var(--muted);font-weight:600;font-size:12.5px;}
+  #judgeChain .jc-row .jc-pct{text-align:right;font-weight:600;font-size:12.5px;}
+  #judgeChain .jc-row .jc-pct.up{color:var(--up);}
+  #judgeChain .jc-row .jc-pct.down{color:var(--down);}
+  #judgeChain .jc-row .jc-pct.flat{color:var(--muted);}
+  #judgeChain .jc-row .jc-txt{color:var(--text);line-height:1.5;word-break:break-all;}
+  #judgeChain .jc-row .jc-txt .jc-label{font-size:11px;color:var(--muted);margin-right:5px;}
+  #judgeChain .jc-row .jc-none{color:var(--muted);font-size:12px;}
+  #judgeChain .jc-row.jc-today{border-color:var(--accent);}
+  @media(max-width:768px){ #judgeChain .jc-row{grid-template-columns:1fr 1fr;} #judgeChain .jc-row .jc-txt:nth-of-type(3),#judgeChain .jc-row .jc-txt:nth-of-type(4){grid-column:1/-1;} }
   #reviewForm{display:flex;flex-direction:column;gap:12px;}
   #reviewForm label{display:flex;flex-direction:column;gap:6px;font-size:13px;color:var(--muted);}
   textarea,input[type=text],input[type=number],input:not([type]){background:var(--card2);border:1px solid var(--border2);color:var(--text);border-radius:9px;padding:10px 12px;font-size:16px;min-height:44px;width:100%;font-family:inherit;}
@@ -264,10 +279,14 @@
   </section>
 
   <section class="card" data-page-node-id="RMnBuScSuFIuILv6h8ypPA">
-    <h2 data-page-node-id="06zwtChMeKKpbYVrngCHzv">
+      <h2 data-page-node-id="06zwtChMeKKpbYVrngCHzv">
       <svg class="hicon" viewBox="0 0 24 24" fill="none" stroke="#7fb4ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-page-node-id="PeQKYuFFuAGpiqHtvo81TC"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" data-page-node-id="jh6ZFA0LAvRMy4wfEnEhnz"/><polyline points="14 2 14 8 20 8" data-page-node-id="A7PU6zGVzxAmFEFzXUuHoN"/><line x1="16" y1="13" x2="8" y2="13" data-page-node-id="VKEcdQ7RlvZnKArEieq7sK"/><line x1="16" y1="17" x2="8" y2="17" data-page-node-id="yYiIYj8Gs6RKomr1XwnBYk"/></svg>
       ④ 复盘笔记
     </h2>
+    <div id="judgeChain">
+      <div class="jc-head">近 7 日判断链<span class="jc-sub">你的判断 · 按日回溯</span></div>
+      <p class="muted">加载中…</p>
+    </div>
     <form id="reviewForm" autocomplete="off" data-page-node-id="LTPThDDCGlBONVuchihUM5">
       <label data-page-node-id="AoN0oh6HTtgE2l9nNgUDdv">今日要处理（分号或换行分隔多条，展示在页面顶部）<textarea name="todo" id="r_todo" data-nocache="false"></textarea></label>
       <label data-page-node-id="hjL3Yh8HzY8SSpFNlWoDas">大盘判断<textarea name="judge" id="r_judge"></textarea></label>
@@ -559,6 +578,7 @@
     renderHoldings();
     renderPosTable();
     renderReview();
+    renderJudgeChain();
   }
 
   function renderSync(){
@@ -1402,6 +1422,46 @@
     $('r_risk').value = rec && rec['风险提示'] ? rec['风险提示'] : '';
     $('reviewStatus').textContent = '';
   }
+
+  function renderJudgeChain(){
+    var wrap = $('judgeChain');
+    if(!wrap) return;
+    // 取「有复盘内容」的最近 7 个交易日（含当前选中日）
+    var items = [];
+    for(var i=state.db1dates.length-1; i>=0 && items.length<7; i--){
+      var d = state.db1dates[i];
+      var r = state.db1map[d];
+      if(!r) continue;
+      var judge = String(r['大盘判断']||'').trim();
+      var plan  = String(r['明日计划']||'').trim();
+      var op    = String(r['持仓操作']||'').trim();
+      if(!judge && !plan && !op) continue;   // 跳过完全没填的日子
+      items.push({ d: d, r: r, judge: judge, plan: plan, op: op });
+    }
+    if(!items.length){
+      wrap.innerHTML = '<div class="jc-head">近 7 日判断链<span class="jc-sub">你的判断 · 按日回溯</span></div>'
+        + '<div class="jc-empty">还没有复盘记录。每天收盘后在下方「复盘笔记」写下判断，这里会自动汇成你的判断链。</div>';
+      return;
+    }
+    var html = '<div class="jc-head">近 7 日判断链<span class="jc-sub">你的判断 · 按日回溯</span></div>';
+    for(var k=0;k<items.length;k++){
+      var it = items[k];
+      var pct = Number(it.r['上证涨跌幅']);
+      var pctTxt = isNaN(pct) ? '--' : fmtPct(pct);
+      var pctClsName = isNaN(pct) ? 'flat' : pctCls(pct);
+      var judgeTxt = it.judge ? '<span class="jc-txt"><span class="jc-label">判断</span>'+esc(trunc(it.judge,42))+'</span>'
+                              : '<span class="jc-txt jc-none">判断未填</span>';
+      var planTxt = it.plan ? '<span class="jc-txt"><span class="jc-label">计划</span>'+esc(trunc(it.plan,42))+'</span>'
+                            : '<span class="jc-txt jc-none">计划未填</span>';
+      var todayCls = (it.d === state.date) ? ' jc-today' : '';
+      html += '<div class="jc-row'+todayCls+'"><span class="jc-date">'+esc(it.d.slice(5))+'</span>'
+        + '<span class="jc-pct '+pctClsName+'">'+pctTxt+'</span>'
+        + judgeTxt + planTxt + '</div>';
+    }
+    wrap.innerHTML = html;
+  }
+
+  function trunc(s,n){ s = String(s||''); return s.length>n ? s.slice(0,n)+'…' : s; }
 
   /* ========== 写操作 ========== */
   function saveReview(e){
