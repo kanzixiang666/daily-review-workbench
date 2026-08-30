@@ -29,6 +29,16 @@
   .btn.small{min-height:36px;padding:0 10px;font-size:13px;}
   .btn.ghost{background:transparent;}
   main{max-width:1060px;margin:0 auto;padding:16px;display:flex;flex-direction:column;gap:16px;}
+  /* 左侧模块导航（桌面端） */
+  #sideNav{position:fixed;left:14px;top:50%;transform:translateY(-50%);z-index:40;display:flex;flex-direction:column;gap:6px;}
+  #sideNav a{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:9px;color:var(--muted);text-decoration:none;font-size:12.5px;border:1px solid transparent;transition:all .15s;white-space:nowrap;}
+  #sideNav a .sn-ico{width:20px;height:20px;border-radius:6px;background:var(--card2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:var(--muted);flex:none;}
+  #sideNav a:hover{color:var(--text);border-color:var(--border2);}
+  #sideNav a.on{color:#fff;background:var(--accent);border-color:var(--accent);}
+  #sideNav a.on .sn-ico{background:rgba(255,255,255,.16);border-color:transparent;color:#fff;}
+  @media(min-width:1180px){ #sideNav{left:22px;} }
+  @media(max-width:1100px){ #sideNav{display:none;} }
+  @media(max-width:900px){ main{padding:12px;} }
   .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;}
   .card h2{font-size:16px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
   .card h2 .hicon{width:20px;height:20px;flex:none;}
@@ -211,6 +221,15 @@
   </div>
 </header>
 
+<nav id="sideNav" aria-label="模块导航">
+  <a href="#sec-today" data-sec="sec-today"><span class="sn-ico">1</span><span class="sn-txt">今日要处理</span></a>
+  <a href="#sec-market" data-sec="sec-market"><span class="sn-ico">2</span><span class="sn-txt">大盘速览</span></a>
+  <a href="#sec-global" data-sec="sec-global"><span class="sn-ico">3</span><span class="sn-txt">全球市场</span></a>
+  <a href="#sec-holdings" data-sec="sec-holdings"><span class="sn-ico">4</span><span class="sn-txt">持仓分析</span></a>
+  <a href="#sec-review" data-sec="sec-review"><span class="sn-ico">5</span><span class="sn-txt">复盘笔记</span></a>
+  <a href="#sec-judge" data-sec="sec-judge"><span class="sn-ico">6</span><span class="sn-txt">判断回测</span></a>
+</nav>
+
 <main data-page-node-id="xEil2pAAPd7qFQxHAZdpAo">
 
   <section class="card datenav" data-page-node-id="rbt9WlprPnnFV4hwNjn6br">
@@ -221,7 +240,7 @@
     <span id="srcBadge" class="badge" data-sp-bindable="database" data-sp-database-id="cLcxNlQynomKfZa92Ptryc" data-page-node-id="gdyhjev2oVRiNnlbHQDIcx">--</span>
   </section>
 
-  <section class="card today" data-page-node-id="AQpGqU1NaVKwOJVXnDYxKL">
+  <section class="card today" data-page-node-id="AQpGqU1NaVKwOJVXnDYxKL" id="sec-today">
     <h2 data-page-node-id="7w8Ij71eEp266hZDMexHOx">
       <svg class="hicon" viewBox="0 0 24 24" fill="none" stroke="#ff9db1" stroke-width="2" stroke-linecap="round" data-page-node-id="wZEyH1lTw4IIuCQthEG17g"><path d="M12 9v4" data-page-node-id="FCgwJYMX4ZrL91Ti4ytLNO"/><path d="M12 17h.01" data-page-node-id="jqDkKeh7DooWjgcNksLP0t"/><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z" data-page-node-id="FvJ6hq5CtFJAmJzyfOo6EC"/></svg>
       今日要处理
@@ -231,7 +250,7 @@
     <ul id="calList" data-sp-bindable="database" data-sp-database-id="WE6AI38GWioyyd3aGraNRg"><li class="muted">加载中…</li></ul>
   </section>
 
-  <section class="card" data-page-node-id="06mUGoFFQ90Gv39CPZellH">
+  <section class="card" data-page-node-id="06mUGoFFQ90Gv39CPZellH" id="sec-market">
     <h2 data-page-node-id="wMDVgD5nWPN3Ee8a4x65kk">
       <svg class="hicon" viewBox="0 0 24 24" fill="none" stroke="#7fb4ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-page-node-id="U8rZPIPqqZCTVtSk9AETFA"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17" data-page-node-id="JtX16qhyeLV6Sd9CiNvtfv"/><polyline points="16 7 22 7 22 13" data-page-node-id="Jn4F6oPwu02VMazcBvJjX4"/></svg>
       ① 今日大盘速览
@@ -280,7 +299,7 @@
     <div id="sectorList" class="chart" data-sp-bindable="database" data-sp-database-id="cLcxNlQynomKfZa92Ptryc" data-page-node-id="a4kopYbQW8X3jDfKstrN8H"><p class="muted" data-page-node-id="Roow5xyzQQvVI7AdUYJDZN">加载中…</p></div>
   </section>
 
-  <section class="card" data-page-node-id="NrTBPG8XLBzeGd0xjSxdXr">
+  <section class="card" data-page-node-id="NrTBPG8XLBzeGd0xjSxdXr" id="sec-global">
     <h2 data-page-node-id="W0xCpqTSb9nLnDJLzEqNeP">
       <svg class="hicon" viewBox="0 0 24 24" fill="none" stroke="#7fb4ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-page-node-id="AaZ4R0Z8kx3Lcba4LQE0jD"><circle cx="12" cy="12" r="10" data-page-node-id="N7U9hnwZvt1HtNgAHMddiS"/><path d="M2 12h20" data-page-node-id="WaI5w46o1RMF3RfLOhD2k2"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" data-page-node-id="fUR66q9wmteVoRb1131ziQ"/></svg>
       ② 全球市场联动
@@ -289,7 +308,7 @@
     <p id="globalComment" class="comment" data-sp-bindable="database" data-sp-database-id="cLcxNlQynomKfZa92Ptryc" data-page-node-id="VzI3UQRGeZOl2XwPVTRj7z">--</p>
   </section>
 
-  <section class="card" data-page-node-id="53r8NQA1ZNzjlJxERjTZa5">
+  <section class="card" data-page-node-id="53r8NQA1ZNzjlJxERjTZa5" id="sec-holdings">
     <h2 data-page-node-id="z3e9JUUGmITHUWRDk7Ign6">
       <svg class="hicon" viewBox="0 0 24 24" fill="none" stroke="#7fb4ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-page-node-id="6gupcqDZCVWD1nSvV8rj12"><rect x="2" y="6" width="20" height="12" rx="2" data-page-node-id="It9a49IfM6LMtQ7VKUt7U2"/><circle cx="12" cy="12" r="2.5" data-page-node-id="Cd4l90xxY9uoS47Qiz3NyK"/><path d="M6 12h.01M18 12h.01" data-page-node-id="TmkdsH532vMISUXS3yscra"/></svg>
       ③ 持仓强弱分析
@@ -307,7 +326,7 @@
     <div id="cumChart" class="chart" data-sp-bindable="database" data-sp-database-id="rOEUCAdnBUZXNJpMNg1WNd" data-page-node-id="Gi1qjg2d84FCvv6LLHhEv0"></div>
   </section>
 
-  <section class="card" data-page-node-id="RMnBuScSuFIuILv6h8ypPA">
+  <section class="card" data-page-node-id="RMnBuScSuFIuILv6h8ypPA" id="sec-review">
       <h2 data-page-node-id="06zwtChMeKKpbYVrngCHzv">
       <svg class="hicon" viewBox="0 0 24 24" fill="none" stroke="#7fb4ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-page-node-id="PeQKYuFFuAGpiqHtvo81TC"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" data-page-node-id="jh6ZFA0LAvRMy4wfEnEhnz"/><polyline points="14 2 14 8 20 8" data-page-node-id="A7PU6zGVzxAmFEFzXUuHoN"/><line x1="16" y1="13" x2="8" y2="13" data-page-node-id="VKEcdQ7RlvZnKArEieq7sK"/><line x1="16" y1="17" x2="8" y2="17" data-page-node-id="yYiIYj8Gs6RKomr1XwnBYk"/></svg>
       ④ 复盘笔记
@@ -329,7 +348,7 @@
     </form>
   </section>
 
-  <section class="card">
+  <section class="card" id="sec-judge">
     <h2>
       <svg class="hicon" viewBox="0 0 24 24" fill="none" stroke="#7fb4ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1v22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
       ⑤ 个股判断与回测
@@ -2016,6 +2035,33 @@
     $('overlay').addEventListener('click', function(){ openDrawer(false); });
     $('btnExport').addEventListener('click', exportJSON);
     $('btnClearSample').addEventListener('click', clearSample);
+    /* 左侧模块导航：平滑滚动 + 高亮 */
+    var nav = $('sideNav');
+    if(nav){
+      nav.addEventListener('click', function(e){
+        var a = e.target.closest ? e.target.closest('a') : null;
+        if(!a || !a.getAttribute('href')) return;
+        e.preventDefault();
+        var target = document.getElementById(a.getAttribute('href').slice(1));
+        if(!target) return;
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        var links = nav.querySelectorAll('a');
+        for(var i=0;i<links.length;i++){ links[i].className = (links[i]===a) ? 'on' : ''; }
+      });
+      window.addEventListener('scroll', function(){
+        var pos = window.scrollY + 120;
+        var cur = 'sec-today';
+        var secs = ['sec-today','sec-market','sec-global','sec-holdings','sec-review','sec-judge'];
+        for(var i=0;i<secs.length;i++){
+          var el = document.getElementById(secs[i]);
+          if(el && el.offsetTop <= pos) cur = secs[i];
+        }
+        var links = nav.querySelectorAll('a');
+        for(var j=0;j<links.length;j++){
+          links[j].className = (links[j].getAttribute('data-sec')===cur) ? 'on' : '';
+        }
+      });
+    }
   }
   function openDrawer(show){
     $('drawer').className = show ? 'open' : '';
