@@ -91,6 +91,8 @@
   .lmt-tag{display:inline-block;font-size:11px;padding:1px 7px;border-radius:999px;background:#233149;color:#ffd58a;width:fit-content;}
   .lmt-ind{font-size:12px;color:#9fb2c8;}
   .lmt-reason{font-size:11px;color:var(--muted);margin-top:2px;line-height:1.4;}
+  .lmt-pager{display:flex;align-items:center;gap:10px;padding:8px 4px 2px;font-size:12px;color:var(--muted);}
+  .lmt-pager .btn{padding:3px 10px;font-size:12px;min-height:30px;}
   @media(max-width:768px){
     .lmt-row{grid-template-columns:1.5fr .8fr 1fr;font-size:12px;}
     .lmt-row > span:nth-child(4),.lmt-row > span:nth-child(5){display:none;}
@@ -270,8 +272,14 @@
         <span class="idx-name" data-page-node-id="GHhOBs8Kf6otPoUHz2Oljy">上证指数</span>
         <div data-page-node-id="M1PYGHNqREcGTkfR8DlATZ"><b id="idxClose" class="flat" data-sp-bindable="database" data-sp-database-id="cLcxNlQynomKfZa92Ptryc" data-page-node-id="V52QZHaTi83ZccChoSdRND">--</b><span id="idxPct" class="pct flat" data-sp-bindable="database" data-sp-database-id="cLcxNlQynomKfZa92Ptryc" data-page-node-id="y94NrlffepJZeXfZLaLe4Y">--</span></div>
       </div>
-      <div class="idx-sub" data-page-node-id="OJAltm1iZpQUIUjXEPlQM1">深证成指<b id="szPct" class="flat" data-sp-bindable="database" data-sp-database-id="cLcxNlQynomKfZa92Ptryc" data-page-node-id="dDivIUrZwrIBe04L2Y2iOE">--</b></div>
-      <div class="idx-sub" data-page-node-id="EGwO7m19V9cJVE2yiWYDee">创业板指<b id="cybPct" class="flat" data-sp-bindable="database" data-sp-database-id="cLcxNlQynomKfZa92Ptryc" data-page-node-id="87w5l38mNRFxiYaBOOZRoA">--</b></div>
+      <div class="idx-main">
+        <span class="idx-name">深证成指</span>
+        <div><b id="szClose" class="flat">--</b><span id="szPct" class="pct flat">--</span></div>
+      </div>
+      <div class="idx-main">
+        <span class="idx-name">创业板指</span>
+        <div><b id="cybClose" class="flat">--</b><span id="cybPct" class="pct flat">--</span></div>
+      </div>
       <div class="idx-sub" data-page-node-id="NLVglXAzmdQr0dYyzIef3E">两市成交额<b id="amtVal" data-sp-bindable="database" data-sp-database-id="cLcxNlQynomKfZa92Ptryc" data-page-node-id="iyBEZ7EKhtw1Isxx3OHKiR">--</b></div>
       <div class="idx-sub" data-page-node-id="X9eOa7ui2ixGGnsCmG0Fid">市场情绪<b id="moodBadge" data-sp-bindable="database" data-sp-database-id="cLcxNlQynomKfZa92Ptryc" data-page-node-id="OTNv2qmfPFDyKxRpJQqHP5">--</b></div>
     </div>
@@ -306,6 +314,11 @@
     </div>
     <div id="intradayWrap" class="chart" data-sp-bindable="database" data-sp-database-id="cLcxNlQynomKfZa92Ptryc"><p class="muted">加载中…</p></div>
     <h3 data-page-node-id="mdDfpS3NYmH2d4ToKAHmAj">板块涨跌与主力资金流向</h3>
+    <div class="tabs" id="sectorPeriods" style="margin-top:4px">
+      <button class="tab on" type="button" data-sp="1">当日</button>
+      <button class="tab" type="button" data-sp="5">近5日</button>
+      <button class="tab" type="button" data-sp="20">近20日</button>
+    </div>
     <div id="sectorList" class="chart" data-sp-bindable="database" data-sp-database-id="cLcxNlQynomKfZa92Ptryc" data-page-node-id="a4kopYbQW8X3jDfKstrN8H"><p class="muted" data-page-node-id="Roow5xyzQQvVI7AdUYJDZN">加载中…</p></div>
   </section>
 
@@ -474,6 +487,7 @@
     intradayIdx: 'sh',
     intradayStep: 1,
     judgePeriod: 3,
+    sectorPeriod: 1,
     klineRange: '1m',
     klineIdx: 'sh',
     schemaOptions: {}   // { '类型': [{text,id}] }
@@ -823,6 +837,36 @@
       return out;
     }catch(e){ return []; }
   }
+  // 聚合近 N 个交易日的板块涨跌/资金流（按板块名：pct 取日均，inflow 取累计）
+  function aggSectors(period){
+    if(!period || period<=1) return null;
+    var idx = state.db1dates.indexOf(state.date);
+    if(idx<0) return null;
+    var start = Math.max(0, idx-period+1);
+    var byName = {}, order = [], days = 0;
+    for(var i=start; i<=idx; i++){
+      var d = state.db1dates[i];
+      var rec = state.db1map[d];
+      if(!rec) continue;
+      var rows = parseSectors(rec['板块资金流向']);
+      if(!rows.length) continue;
+      days++;
+      for(var j=0;j<rows.length;j++){
+        var r = rows[j];
+        if(!byName[r.name]){ byName[r.name] = { name: r.name, pctSum: 0, inflowSum: 0, cnt: 0 }; order.push(r.name); }
+        byName[r.name].pctSum += r.pct;
+        byName[r.name].cnt++;
+        if(r.inflow!==null && !isNaN(r.inflow)) byName[r.name].inflowSum += r.inflow;
+      }
+    }
+    if(!days || !order.length) return null;
+    var out = [];
+    for(var k=0;k<order.length;k++){
+      var b = byName[order[k]];
+      out.push({ name: b.name, pct: +(b.pctSum/b.cnt).toFixed(2), inflow: b.inflowSum, _days: b.cnt, _total: days });
+    }
+    return out;
+  }
 
   function sparklineSVG(points){
     if(!points || points.length < 2) return '<p class="muted">数据不足，暂无法绘制走势（至少 2 个交易日）</p>';
@@ -1107,8 +1151,10 @@
     if(!rec){
       $('idxClose').textContent='--'; $('idxClose').className='flat';
       $('idxPct').textContent='--'; $('idxPct').className='pct flat';
-      $('szPct').textContent='--'; $('szPct').className='flat';
-      $('cybPct').textContent='--'; $('cybPct').className='flat';
+      $('szClose').textContent='--'; $('szClose').className='flat';
+      $('szPct').textContent='--'; $('szPct').className='pct flat';
+      $('cybClose').textContent='--'; $('cybClose').className='flat';
+      $('cybPct').textContent='--'; $('cybPct').className='pct flat';
       $('amtVal').textContent='--';
       $('moodBadge').textContent='--'; $('moodBadge').className='';
       $('sparkWrap').innerHTML='<p class="muted">该日无行情数据</p>';
@@ -1122,8 +1168,14 @@
     closeEl.className = pctCls(shP)==='down' ? 'down' : (pctCls(shP)==='up' ? 'up' : 'flat');
     var pctEl = $('idxPct');
     pctEl.textContent = fmtPct(shP); pctEl.className = 'pct ' + pctCls(shP);
-    $('szPct').textContent = fmtPct(rec['深证成指涨跌幅']); $('szPct').className = pctCls(rec['深证成指涨跌幅']);
-    $('cybPct').textContent = fmtPct(rec['创业板指涨跌幅']); $('cybPct').className = pctCls(rec['创业板指涨跌幅']);
+    var szP = rec['深证成指涨跌幅'];
+    $('szClose').textContent = num(rec['深证成指'],2) || '--';
+    $('szClose').className = pctCls(szP)==='down' ? 'down' : (pctCls(szP)==='up' ? 'up' : 'flat');
+    $('szPct').textContent = fmtPct(szP); $('szPct').className = 'pct ' + pctCls(szP);
+    var cybP = rec['创业板指涨跌幅'];
+    $('cybClose').textContent = num(rec['创业板指'],2) || '--';
+    $('cybClose').className = pctCls(cybP)==='down' ? 'down' : (pctCls(cybP)==='up' ? 'up' : 'flat');
+    $('cybPct').textContent = fmtPct(cybP); $('cybPct').className = 'pct ' + pctCls(cybP);
     var amt = Number(rec['两市成交额']);
     $('amtVal').textContent = isNaN(amt) ? '--' : amt.toFixed(0) + ' 亿';
     var mood = String(rec['市场情绪']||'');
@@ -1160,7 +1212,18 @@
     else if(range==='1y') n = 250;
     pts = pts.slice(-n);
     $('sparkWrap').innerHTML = sparklineSVG(pts);
-    $('sectorList').innerHTML = sectorSVG(parseSectors(rec['板块资金流向']));
+    var sp = state.sectorPeriod || 1;
+    var sectorRows = null;
+    if(sp>1){
+      sectorRows = aggSectors(sp);
+      if(!sectorRows){
+        $('sectorList').innerHTML = '<p class="muted">近 '+sp+' 个交易日内暂无板块数据（自动更新会逐日积累）</p>';
+      } else {
+        $('sectorList').innerHTML = sectorSVG(sectorRows) + '<p class="muted" style="font-size:11px;margin-top:4px;">近 '+sp+' 个交易日板块均值（有板块数据 '+sectorRows[0]._total+' 天，部分板块可能缺失）</p>';
+      }
+    } else {
+      $('sectorList').innerHTML = sectorSVG(parseSectors(rec['板块资金流向']));
+    }
     srcBadge.textContent = rec['数据来源'] || '数据';
     srcBadge.className = 'badge' + (rec['数据来源']==='示例数据' ? ' sample' : '');
   }
@@ -1183,11 +1246,18 @@
     return html;
   }
 
-  function limitStockList(arr, isZt){
+  function limitStockList(arr, isZt, page){
     if(!arr || !arr.length) return '<p class="muted">无</p>';
+    page = page || 1;
+    var per = 10;
+    var total = arr.length;
+    var pages = Math.max(1, Math.ceil(total/per));
+    if(page>pages) page = pages;
+    var start = (page-1)*per;
+    var slice = arr.slice(start, start+per);
     var html = '<div class="lmt-row lmt-head"><span>名称</span><span>涨幅</span><span>板型</span><span>首次封板</span><span>所属行业</span></div>';
-    for(var i=0;i<arr.length && i<20;i++){
-      var it = arr[i];
+    for(var i=0;i<slice.length;i++){
+      var it = slice[i];
       var chg = Number(it.chg);
       var chgTxt = (chg>0?'+':'') + (isNaN(chg)?'--':chg.toFixed(2)+'%');
       var col = isZt ? '#ff5d5d' : '#2bd576';
@@ -1198,6 +1268,12 @@
             + '<span class="lmt-tag">' + esc(daysTxt) + '</span>'
             + '<span>' + esc(it.first||'--') + '</span>'
             + '<span class="lmt-ind">' + esc(it.industry||'') + '</span></div>';
+    }
+    if(pages>1){
+      html += '<div class="lmt-pager"><span class="lmt-pg">共 ' + total + ' 只 · 第 ' + page + '/' + pages + ' 页</span>'
+        + (page>1 ? '<button class="btn small" type="button" data-lmt="'+(isZt?'zt':'dt')+'" data-pg="'+(page-1)+'">◀ 上一页</button>' : '')
+        + (page<pages ? '<button class="btn small" type="button" data-lmt="'+(isZt?'zt':'dt')+'" data-pg="'+(page+1)+'">下一页 ▶</button>' : '')
+        + '</div>';
     }
     return html;
   }
@@ -1213,14 +1289,16 @@
     var dt = parseJSONArr(rec['跌停列表']);
     var con = parseJSONArr(rec['概念统计']);
     var ind = parseJSONArr(rec['行业统计']);
+    if(!state.limitPage) state.limitPage = {};
+    var ztPg = state.limitPage.zt || 1, dtPg = state.limitPage.dt || 1;
     var html = '<div class="lmt-summary">'
       + '<div class="lmt-num zt"><b>' + (rec['涨停数']!=null?rec['涨停数']:zt.length) + '</b><span>涨停</span></div>'
       + '<div class="lmt-num dt"><b>' + (rec['跌停数']!=null?rec['跌停数']:dt.length) + '</b><span>跌停</span></div>'
       + '<div class="lmt-chips"><div class="lmt-caption">概念热度 TOP</div>' + limitChips(con,'zt') + '</div>'
       + '<div class="lmt-chips"><div class="lmt-caption">涨停行业 TOP</div>' + limitChips(ind,'') + '</div>'
       + '</div>';
-    html += '<div class="lmt-caption">涨停个股（最多 20 只）</div>' + limitStockList(zt, true);
-    html += '<div class="lmt-caption" style="margin-top:10px">跌停个股</div>' + limitStockList(dt, false);
+    html += '<div class="lmt-caption">涨停个股（每页 10 只）</div>' + limitStockList(zt, true, ztPg);
+    html += '<div class="lmt-caption" style="margin-top:10px">跌停个股（每页 10 只）</div>' + limitStockList(dt, false, dtPg);
     wrap.innerHTML = html;
   }
 
@@ -2072,6 +2150,25 @@
       var ts = this.querySelectorAll('.tab');
       for(var i=0;i<ts.length;i++){ ts[i].className = (ts[i]===b) ? 'tab on' : 'tab'; }
       renderJudge();
+    });
+    $('limitWrap').addEventListener('click', function(e){
+      var b = e.target.closest ? e.target.closest('button[data-lmt]') : null;
+      if(!b) return;
+      var kind = b.getAttribute('data-lmt'), pg = parseInt(b.getAttribute('data-pg'), 10);
+      if(!kind || !pg) return;
+      if(!state.limitPage) state.limitPage = {};
+      state.limitPage[kind] = pg;
+      renderLimit();
+    });
+    $('sectorPeriods').addEventListener('click', function(e){
+      var b = e.target.closest ? e.target.closest('.tab') : null;
+      if(!b) return;
+      var sp = parseInt(b.getAttribute('data-sp'), 10);
+      if(!sp || sp===state.sectorPeriod) return;
+      state.sectorPeriod = sp;
+      var ts = this.querySelectorAll('.tab');
+      for(var i=0;i<ts.length;i++){ ts[i].className = (ts[i]===b) ? 'tab on' : 'tab'; }
+      renderMarket();
     });
     $('r_todo').addEventListener('input', draftReviewSave);
     $('r_judge').addEventListener('input', draftReviewSave);
